@@ -1,0 +1,97 @@
+#include <Servo.h>
+Servo myServo;
+
+// Ultrasonic
+const int trigPin = 3;
+const int echoPin = 4;
+
+// LED and line sensor
+const int LED = 6;
+const int line = 5;
+
+// Button and buzzer
+const int btn = A1;
+const int buzz = 8;
+
+// Motors
+const int EnA = 10;
+const int In1 = 9;
+const int In2 = 11;
+
+// Sound sensor 
+const int soundPin = A0;
+
+void setup() {
+  pinMode(trigPin, INPUT);
+  pinMode(echoPin, OUTPUT);
+  pinMode(btn, INPUT);
+  pinMode(buzz, OUTPUT);
+  pinMode(soundPin, INPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(line, INPUT);
+  myServo.attach(2);
+  pinMode(In1, OUTPUT);
+  pinMode(In2, OUTPUT);  
+  
+  // Initialize serial communication:
+  Serial.begin(9600);
+}
+
+void loop() { 
+  // Button and buzzer
+  if (digitalRead(btn) == HIGH) {
+    tone(buzz, 1000);
+  } else {
+    noTone(buzz);
+  } 
+
+  // Ultrasonic and Servo
+  long duration, cm;  
+  
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2
+
+  // Convert the time into a distance
+  cm = microsecondsToCentimetres(duration);
+  
+  Serial.print(cm);
+  Serial.print("cm");
+  Serial.println();  
+  delay(100);
+  
+  // Map the ultrasonic distance to the servo angle
+  int servoAngle = map(distance, 0, 200, 0, 180);
+  myServo.write(servoAngle);
+
+  // Line sensor & LED
+  int val = analogRead(line);
+  Serial.println(val);
+  if (val > 100) {
+    digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(LED, LOW);
+  }
+
+  // Sound sensor and motor control
+  int sounddetect = analogRead(soundPin);
+  if (sounddetect > 10) {
+    digitalWrite(In1, HIGH);
+    digitalWrite(In2, LOW);
+    analogWrite(EnA, 200);
+  } else {
+    digitalWrite(In1, LOW);
+    digitalWrite(In2, LOW);
+  }
+
+  delay(100);
+}
+
+long microsecondsToCentimetres(long microseconds) {
+  return microseconds / 29 / 2;
+}
